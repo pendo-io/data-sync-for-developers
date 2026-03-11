@@ -5,19 +5,24 @@ Loading Pendo Data Sync exports into a lakehouse follows a standard ETL pattern:
 ## Data Load Flow
 
 ```
-Pendo Data Sync  →  Cloud Storage (S3/GCS/Azure)  →  ETL Pipeline  →  Lakehouse Tables
+Pendo Data Sync  →  Cloud Storage (S3/GCS/Azure)  →  ETL Pipeline  →  Longterm Storage
 ```
+
+## Key Concepts
+
+- **Export structure** — Avro files, manifests, BOMs; data under `{app}/`, `account/`, `visitor/`.
+- **Schema layout** — One schema per app for events/defs; separate for visitors/accounts, matching export hierarchy.
+- **Idempotent loads** — Re-exported event data (finalized/retroactive); delete by `periodId`/`matchableId` before insert.
+- **Definition tables** — Full replace on load; account/visitor exports use different BOM shapes than app exports.
 
 ## Concept Files
 
 | Concept | Description |
 |---------|-------------|
-| [Export Overview](./export-overview.md) | How Pendo exports data, cloud destinations, export types, and file hierarchy |
-| [ETL Pipeline](./etl-pipeline.md) | Extract, transform, and load design |
-| [Data Load Strategy](./dataload-strategy.md) | Idempotency, finalized days, and retroactive processing |
-| [Retroactive Processing](./retroactive-processing.md) | Why Pendo reprocesses historical data when Page/Feature rules change |
-| [Finalized Data](./finalized-data.md) | Why event data is mutable for ~7–9 days and how to handle it |
-| [Lakehouse Considerations](./lakehouse-considerations.md) | Lakehouse choice, partitioning, and Avro handling |
+| [Export Overview](./export-overview.md) | Export types, cloud destinations, directory structure. See [`.data/`](../../.data/) for samples. |
+| [Data Load Strategy](./dataload-strategy.md) | Schema layout, table mappings, load logic, pre-filtering. |
+| [Finalized Data](./finalized-data.md) | Why event data is mutable for ~7–9 days; merge by `periodId`. |
+| [Retroactive Processing](./retroactive-processing.md) | Why Pendo reprocesses when Page/Feature rules change; matched events only. |
 
 ## Learn More
 

@@ -1,75 +1,118 @@
 # Data Load Strategy
 
-Pendo Data Sync re-exports data in specific scenarios. Your ETL pipeline must handle these updates idempotently to avoid duplicates and keep your lakehouse aligned with Pendo.
+It's recommended to create a schema per application for event and definition data, with one schema for visitors and accounts each. This most closely matches the export avro files.
 
-## Finalized Days
+```
+DATABASE
+│
+├── S: SUB_{subscription_id}_ACCOUNT
+│   ├── T: ACCOUNTS
+│   └── T: ACCOUNTMETADATA
+│
+├── S: SUB_{subscription_id}_VISITOR
+│   ├── T: VISITORS
+│   └── T: VISITORMETADATA
+│
+└── S: SUB_{subscription_id}_APP_{application_id}
+    ├── T: ALLEVENTS
+    ├── T: MATCHEDPAGEEVENTS
+    ├── T: MATCHEDFEATUREEVENTS
+    ├── T: MATCHEDTRACKTYPEEVENTS
+    ├── T: PAGES
+    ├── T: FEATURES
+    ├── T: TRACKTYPES
+    └── T: GUIDES
+```
+`S: schema` , `T: table`
 
-Event data is not finalized immediately. Session data can arrive late (eg. a user leaves a browser tab open, or a device crashes before sending). Pendo finalizes event data approximately **7–9 days** after collection.
+## Tables
 
-### How Recurring Exports Work
+| Table | Source | Primary Key | Partition Key |
+|-------|--------|-------------|---------------|
+| `ACCOUNTS` | `account/{export}/accounts.avro` | `(id, )` | - |
+| `ACCOUNTMETADATA` | `account/{export}/metadataschema.avro` | `(accountId, name)` | - |
+| `VISITORS` | `visitor/{export}/visitors.avro` | `(id, )` | - |
+| `VISITORMETADATA` | `visitor/{export}/metadataschema.avro` | `(visitorId, name)` | - |
+| `ALLEVENTS` | ` {app} /{export}/allevents.avro` | `(periodId, eventId)` | `periodId` |
+| `MATCHEDPAGEEVENTS` | ` {app} /{export}/matchedEvents/Page/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
+| `MATCHEDFEATUREEVENTS` | ` {app} /{export}/matchedEvents/Feature/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
+| `MATCHEDTRACKTYPEEVENTS` | ` {app} /{export}/matchedEvents/TrackType/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
+| `PAGES` | ` {app} /{export}/allpages.avro` | `(pageId, )` | - |
+| `FEATURES` | ` {app} /{export}/allfeatures.avro` | `(featureId, )` | - |
+| `TRACKTYPES` | ` {app} /{export}/alltracktypes.avro` | `(trackTypeId, )` | - |
+| `GUIDES` | ` {app} /{export}/allguides.avro` | `(guideId, )` | - |
 
-Each daily recurring export includes **two** distinct days of data:
+## Load Logic
 
-1. **Yesterday's data** - Unfinalized; may change in a future export.
-2. **Finalized data** - Typically 8–10 days old; replaces the previously unfinalized export for that day.
+### Event tables
 
-| Export Date | Yesterday's Data | Finalized Data |
-|-------------|------------------|----------------|
-| April 15, 2024 | April 14, 2024 | April 7, 2024 (replaces unfinalized export from April 8) |
+Read the bill of materials and iterate over `timeDependent`. For each `periodId`..
 
-### Load Strategy
+**All Events**
 
-When you receive data for a `periodId` that already exists in your warehouse, **drop the existing data for that period** and load the new data. This applies to both yesterday's updates and finalized replacements.
+- If `allEvents` is present: delete existing rows for this `periodId`, then insert from `allEvents.files`.
+- If `allEvents` is absent (retroactive export): skip. Do not load ALLEVENTS for this period.
 
-## Retroactive Processing
+**Matched Page, Feature, and TrackType Events**
 
-When you add or update rules for Pages or Features in Pendo, Pendo reprocesses historical data to apply the new or changed tags. This triggers a **retroactive export** for the affected Pages and Features.
+- For each entry in `matchedEvents`: use `id` as `matchableId` (e.g. `Page/q95zvVQ6m5wyBz7-FcgxsIKCeLw`).
+- Delete existing rows where `(periodId, matchableId)` matches this period and matchable.
+- If `files` has entries: insert from `files`.
+- If `files` is empty: only delete. (Rules may have changed; the matchable no longer matches any events for this period.)
 
-### Characteristics
+Pendo re-exports the same `periodId` for [finalized days](./finalized-data.md) and [retroactive processing](./retroactive-processing.md).
 
-- Retroactive exports use the same schema as regular exports.
-- They do **not** include `allevents.avro` - only the reprocessed matched event files.
-- Definition files for the changed Pages or Features are included.
-- Retroactive exports appear in the Pendo UI as created by `--system-user--`.
+### Definition tables (Pages, Features, Guides, TrackTypes)
 
-### Load Strategy
+Truncate, then load from `pageDefinitionsFile`, `featureDefinitionsFile`, `guideDefinitionsFile`, `trackTypeDefinitionsFile`.
 
-Use the same drop-and-replace logic as for finalized days: if you receive data for a `periodId` already loaded, drop the event data for that period (for the affected matchables) and load the new files. If you receive an empty list for a period, drop the data for that period.
+Full replace on each load. The latest definitions are in every export.
 
-> [!NOTE]
-> Renaming a Page or Feature in Pendo does not trigger a retroactive export. The updated name appears in the definition file in the next daily export.
+### Account and Visitor tables
 
-For more on why retroactive processing happens and Pendo's architecture, see [Retroactive Processing](./retroactive-processing.md).
+Account and visitor exports use a different bill-of-materials shape: `accounts.files` / `visitors.files` and `metadataSchemaFile`.
 
-## Idempotency
+Full replace on each load. No `timeDependent` block.
 
-Design your loads so re-running the pipeline does not create duplicates.
+## Pre-Filtering
 
-### Events
+Filter during load to exclude unwanted rows. Document exclusions for downstream consumers. Some examples of why you may pre-filter data before loading to long-term storage..
 
-- **Key:** `(periodId, eventId, matchableId)` - Use this combination for upsert or as the scope for drop-and-replace.
-- **Strategy:** For each `periodId` in an export, delete existing rows for that period, then insert the new data. This handles finalized days, retroactive exports, and pipeline re-runs.
+- **Anonymous visitors** - Pendo assigns temporary IDs to unidentified users, most of Pendo reporting revolves around identified users.
+- **Align with Pendo analytics** - Data Sync exports all events, including those classified by the [exclude list](https://support.pendo.io/hc/en-us/articles/360032209171).
+- **Cost and compliance** - Reduce storage and query cost, or exclude test accounts, internal users, or regions for privacy.
 
-### Accounts and Visitors
+**Example: exclude anonymous visitors** (`visitorId` like `_PENDO_T_%`):
 
-- **Key:** `accountId` or `visitorId`
-- **Strategy:** For ongoing metadata updates, drop existing rows for each `accountId`/`visitorId` in the export, then insert the new data. Full replace per record ensures consistency.
+```sql
+INSERT INTO bronze.ALLEVENTS (
+    periodId
+  , eventId
+  , visitorId
+  , ...
+)
+SELECT
+    periodId
+  , eventId
+  , visitorId
+  , ...
+FROM
+  staging.allevents_stage
+WHERE
+  visitorId NOT LIKE '_PENDO_T_%'
+;
+```
 
-### Definition Files
+Or filter at query time via a view:
 
-- **Strategy:** Replace all data in definition tables (Pages, Features, Guides, Track Events) with each export. The latest definitions are sent in every export.
-
-## Incremental vs Full Refresh
-
-| Approach | When to Use |
-|----------|-------------|
-| **Incremental** | Recurring or ongoing exports. Process only new exports (track via manifest `counter`). For each export, apply drop-and-replace by `periodId` or by entity ID. |
-| **Full refresh** | One-time backfill or full rebuild. Load all exports from scratch. Still use drop-and-replace within each export to handle overlapping periods. |
-
-Incremental loads are the norm for production. Full refresh is useful for initial backfill or disaster recovery.
-
-## Related Documentation
-
-- [Data Sync event export handling](https://support.pendo.io/hc/en-us/articles/14617105854875-Data-Sync-event-export-handling) - Updates to exported data
-- [Export Overview](./export-overview.md) - File hierarchy and bill of materials
-- [ETL Pipeline](./etl-pipeline.md) - Extract, transform, and load design
+```sql
+CREATE VIEW bronze.ALLEVENTS_IDENTIFIED
+AS (
+  SELECT
+    *
+  FROM
+    bronze.ALLEVENTS
+  WHERE
+    visitorId NOT LIKE '_PENDO_T_%'
+);
+```
