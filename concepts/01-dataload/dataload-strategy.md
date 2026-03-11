@@ -116,3 +116,6 @@ AS (
     visitorId NOT LIKE '_PENDO_T_%'
 );
 ```
+
+---
+← [Data Load Overview](./README.md)

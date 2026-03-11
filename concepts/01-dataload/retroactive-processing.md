@@ -36,3 +36,6 @@ Follow the idempotency pattern detailed in [dataload strategy](./dataload-strate
 ---
 
 **Related:** [Export Overview](./export-overview.md) (types of exports) · [Finalized Data](./finalized-data.md) · [Data Load Strategy](./dataload-strategy.md) · [Data Sync event export handling](https://support.pendo.io/hc/en-us/articles/14617105854875-Data-Sync-event-export-handling)
+
+---
+← [Data Load Overview](./README.md)

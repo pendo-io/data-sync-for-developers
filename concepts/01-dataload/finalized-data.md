@@ -27,3 +27,6 @@ Each daily recurring export typically includes multiple periods of data.
 - **Recent data is mutable** - Last ~10 days can change. Use finalized data only for complete analytics, or document the lag.
 
 **Related:** [Data Load Strategy](./dataload-strategy.md) · [Retroactive Processing](./retroactive-processing.md) · [Export Overview](./export-overview.md)
+
+---
+← [Data Load Overview](./README.md)

@@ -95,3 +95,6 @@ This repository includes a [`.data/`](../../.data/) folder that mirrors the expo
         ├── visitors.avro              # Visitor definitions
         └── metadataschema.avro        # Schema for metadata fields (names, types, groups)
 ```
+
+---
+← [Data Load Overview](./README.md)
