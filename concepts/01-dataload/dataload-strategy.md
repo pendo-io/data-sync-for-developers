@@ -30,9 +30,9 @@ DATABASE
 | Table | Source | Primary Key | Partition Key |
 |-------|--------|-------------|---------------|
 | `ACCOUNTS` | `account/{export}/accounts.avro` | `(id, )` | - |
-| `ACCOUNTMETADATA` | `account/{export}/metadataschema.avro` | `(accountId, name)` | - |
+| `ACCOUNTMETADATA` | `account/{export}/metadataschema.avro` | `(name, )` | - |
 | `VISITORS` | `visitor/{export}/visitors.avro` | `(id, )` | - |
-| `VISITORMETADATA` | `visitor/{export}/metadataschema.avro` | `(visitorId, name)` | - |
+| `VISITORMETADATA` | `visitor/{export}/metadataschema.avro` | `(name, )` | - |
 | `ALLEVENTS` | ` {app} /{export}/allevents.avro` | `(periodId, eventId)` | `periodId` |
 | `MATCHEDPAGEEVENTS` | ` {app} /{export}/matchedEvents/Page/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
 | `MATCHEDFEATUREEVENTS` | ` {app} /{export}/matchedEvents/Feature/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |

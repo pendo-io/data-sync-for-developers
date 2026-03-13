@@ -20,7 +20,7 @@ data-sync-for-developers/
 ├── .data/              # Reference structure mirroring export hierarchy (see concepts/01-dataload)
 └── concepts/           # Conceptual documentation (markdown only)
     ├── 00-pendo/       # Pendo and Data Sync fundamentals
-    ├── 01-dataload/    # Loading data into the lakehouse
+    ├── 01-dataload/    # Loading data into your longterm storage
     └── 02-querying/    # Querying and analyzing synced data
 ```
 

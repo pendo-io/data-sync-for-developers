@@ -1,35 +1,53 @@
 # Querying Pendo Data Overview
 
-Once Pendo Data Sync data is loaded into your lakehouse, you can query it with SQL or your analytics tool of choice. This document covers how to think about querying Pendo data and common use cases.
+Data Sync loads **raw event data** and definition tables into your lakehouse. To get metrics and segments that align with what you see in the Pendo UI—reports, dashboards, and analytics—you need to **query that raw data and replay the same transformations** Pendo applies: time zones, aggregation rules, exclude lists, and metadata handling. This section describes how to do that.
 
-## Event and History Tables
+## Goal: Match the Pendo UI
 
-Pendo data falls into two categories:
+When your SQL (or analytics tool) applies the same logic Pendo uses, you get:
 
-- **Event tables** - Rows for each user interaction (feature usage, page views, guide engagement, and custom track events).
-- **History tables** - Dimension data (accounts, visitors, features, guides, pages) that change over time.
+- **Reproducible metrics** — Adoption, engagement, and funnel numbers that match Pendo’s.
+- **Shared definitions** — Product and data teams can trust one source of truth.
+- **Flexibility** — The same raw data can power custom breakdowns, joins to CRM/sales, and historical analysis beyond the UI.
 
-Most analyses combine events with history tables. For example, join `FEATURE_EVENT` to the features history table to get feature names and metadata, or join events to `visitors` to enrich with user attributes.
+## Querying flow
 
-## Common Use Cases
+```
+Raw event tables + definition/history tables
+    → Apply time zones, exclude list, aggregation, metadata
+    → Results that match the Pendo UI (or extend it)
+```
 
-| Use Case | Approach |
-|----------|----------|
-| **Feature adoption** | Aggregate `FEATURE_EVENT` by feature and time period; join to features for names. |
-| **User journeys** | Sequence events by `visitor_id` and timestamp; optionally join to pages/features for context. |
-| **Churn prediction** | Use event recency and frequency; combine with account/visitor attributes. |
-| **Guide effectiveness** | Analyze `GUIDE_EVENT` for views, completions, and dismissals by segment. |
+You query the raw event and definition tables, then apply the transformations covered in the topic docs below.
 
-## Combining with Other Data
+## Topics in this section
 
-Data Sync’s value increases when you combine Pendo data with other sources:
+| Topic | Description |
+|-------|-------------|
+| [Visitor and account metadata](visitor-account-metadata.md) | Deriving `VISITORMETADATA` and `ACCOUNTMETADATA` from raw Avro (unpivot via metadataschema) so segment and breakdown logic matches Pendo. |
+| [Aggregation](aggregation.md) | How to aggregate events (e.g. by day, feature, segment) so counts and rates match Pendo reports. |
+| [Time zones](timezones.md) | How timestamps and time zones work in Data Sync and how to bucket/group time so dates align with the Pendo UI. |
+| [Exclude list](exclude-list.md) | Excluding visitors, accounts, or events (e.g. internal, test) so reported numbers match Pendo’s filters and exclude list. |
 
-- **Customer demographics** - Join `visitor_id` or `account_id` to your CRM or identity data.
-- **Marketing data** - Correlate marketing touchpoints with in-app behavior.
-- **Sales data** - Link product usage to conversion and revenue.
+## Event and history tables (what you query)
 
-Use a consistent identity key (eg. `visitor_id`, `account_id`, or a mapped ID) across systems for reliable joins.
+The data you query falls into two categories:
+
+- **Event tables** — Raw user interactions: `ALLEVENTS`, `MATCHEDPAGEEVENTS`, `MATCHEDFEATUREEVENTS`, `MATCHEDTRACKTYPEEVENTS`. One row per event (or per event×matchable for matched tables).
+- **Definition / history tables** — Dimensions that change over time: visitors, accounts, pages, features, track types, guides. Use these to resolve names, metadata, and segment membership.
+
+Most analyses that “match the UI” join events to these definition tables, then apply the same time-windowing, exclusions, and aggregation as Pendo.
+
+## Beyond matching the UI
+
+You can also use the same raw data for use cases that go beyond replicating Pendo:
+
+- **Customer demographics** — Join `visitor_id` or `account_id` to CRM or identity data.
+- **Marketing and sales** — Correlate touchpoints and revenue with in-app behavior.
+- **Custom models** — Churn, journey, or cohort analysis with your own definitions.
+
+Use a consistent identity key (`visitor_id`, `account_id`, or a mapped ID) across systems for reliable joins.
 
 ## Learn More
 
-- [How Pendo uses Data Sync to unify teams with product data](https://www.pendo.io/pendo-blog/how-pendo-uses-data-sync-to-unify-teams-with-product-data/) - Real-world examples and insights
+- [How Pendo uses Data Sync to unify teams with product data](https://www.pendo.io/pendo-blog/how-pendo-uses-data-sync-to-unify-teams-with-product-data/) — Real-world examples and insights
