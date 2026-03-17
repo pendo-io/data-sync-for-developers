@@ -12,6 +12,9 @@ Pendo Data Sync exports granular, event-level product usage data to cloud storag
 
 **Prerequisites:** Pendo Data Sync is a paid add-on. You must be a subscription admin in Pendo to configure cloud storage destinations and enable exports.
 
+> [!CAUTION]
+> Content in this repository is public domain/free use. Use is at your own discretion; the author provides no warranty, support, or service level guarantees.
+
 ## Repository Structure
 
 ```
