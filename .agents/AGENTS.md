@@ -168,6 +168,9 @@ the relevant skill before starting a task:
 
 * `.agents/SKILLS/concept-file-author/` — scaffolds new concept files and section
   READMEs following the conventions in this file
+* `.agents/SKILLS/style-reviewer/` — audits a Markdown file or PR diff for
+  terminology, voice, formatting, and navigation violations; returns a structured
+  report with line references and suggested fixes
 
 ## Boundaries
 
