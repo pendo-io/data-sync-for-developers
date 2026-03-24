@@ -161,6 +161,14 @@ Use these terms exactly as written. Do not invent variants.
 | **finalized data** | finalized export, final data |
 | **schema** (warehouse layer) | database, namespace |
 
+## Skills
+
+Reusable agent skills for common authoring tasks live in `.agents/SKILLS/`. Load
+the relevant skill before starting a task:
+
+* `.agents/SKILLS/concept-file-author/` — scaffolds new concept files and section
+  READMEs following the conventions in this file
+
 ## Boundaries
 
 **Always:**
