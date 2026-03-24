@@ -73,16 +73,39 @@ SELECT periodId, COUNT(*) FROM ALLEVENTS GROUP BY 1;
 
 ### Callouts
 
-Use GitHub's alert syntax for critical warnings — not HTML, not blockquotes:
+GitHub supports five alert types. Use them sparingly — one per section at most.
+Do not stack multiple alerts consecutively; rewrite the prose instead.
 
 ```
+> [!NOTE]
+> The export manifest only shows a rolling 30-day window of exports.
+
+> [!TIP]
+> Filtering anonymous visitors at load time reduces storage costs compared
+> to filtering at query time.
+
 > [!IMPORTANT]
-> The raw event stream (`allEvents.avro`) does not change. Pendo reprocesses
-> **which events match which Pages / Features**.
+> Retroactive exports do not include `allevents.avro`. Only matched event
+> files are re-exported.
+
+> [!WARNING]
+> Loading without the delete step will produce duplicate rows for any
+> `periodId` that has been re-exported.
+
+> [!CAUTION]
+> Resetting the export counter will cause your pipeline to reprocess all
+> historical exports from the beginning.
 ```
 
-Use `[!IMPORTANT]` for warnings that affect data correctness. Reserve it for
-genuinely critical notes; do not use it for tips or general advice.
+Pick the right level:
+
+| Type | Use when |
+| --- | --- |
+| `NOTE` | Supplementary context a reader might miss but won't break anything if they do |
+| `TIP` | An optional practice that meaningfully improves the outcome |
+| `IMPORTANT` | Information a reader must have to succeed — missing it causes silent failure |
+| `WARNING` | An action that will cause errors, duplicates, or data corruption |
+| `CAUTION` | An irreversible or destructive action with no easy recovery |
 
 ### Horizontal rules
 
