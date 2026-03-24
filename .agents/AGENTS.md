@@ -171,6 +171,9 @@ the relevant skill before starting a task:
 * `.agents/SKILLS/style-reviewer/` — audits a Markdown file or PR diff for
   terminology, voice, formatting, and navigation violations; returns a structured
   report with line references and suggested fixes
+* `.agents/SKILLS/concept-reviewer/` — reviews content quality of a concept file
+  or README for clarity, completeness, structure logic, audience calibration, and
+  cross-link coverage; run after style-reviewer, not instead of it
 
 ## Boundaries
 
