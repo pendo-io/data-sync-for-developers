@@ -5,15 +5,15 @@ Loading Pendo Data Sync exports into a lakehouse follows a standard ETL pattern:
 ## Data Load Flow
 
 ```
-Pendo Data Sync  →  Cloud Storage (S3/GCS/Azure)  →  ETL Pipeline  →  Longterm Storage
+Pendo Data Sync  →  Cloud Storage (S3/GCS/Azure)  →  ETL Pipeline  →  Long-term Storage
 ```
 
 ## Key Concepts
 
-- **Export structure** — Avro files, manifests, BOMs; data under `{app}/`, `account/`, `visitor/`.
+- **Export structure** — Avro files, **export manifest**, **bill of materials**; data under `{app}/`, `account/`, `visitor/`.
 - **Schema layout** — One schema per app for events/defs; separate for visitors/accounts, matching export hierarchy.
 - **Idempotent loads** — Re-exported event data (finalized/retroactive); delete by `periodId`/`matchableId` before insert.
-- **Definition tables** — Full replace on load; account/visitor exports use different BOM shapes than app exports.
+- **Definition tables** — Full replace on load; account/visitor exports use a different **bill of materials** shape than app exports.
 
 ## Concept Files
 
@@ -26,5 +26,5 @@ Pendo Data Sync  →  Cloud Storage (S3/GCS/Azure)  →  ETL Pipeline  →  Long
 
 ## Learn More
 
-- [Pendo Academy Data Sync](https://academy.pendo.io/data-sync) - Learning resources on Data Sync
-- [Pendo Data Sync GCP export loading example](https://github.com/pendo-io/data-sync-gcp-export-loading-example) - Sample code for loading from GCS into BigQuery
+* [Pendo Academy Data Sync](https://academy.pendo.io/data-sync) — Learning resources on Data Sync
+* [Pendo Data Sync GCP export loading example](https://github.com/pendo-io/data-sync-gcp-export-loading-example) — Sample code for loading from GCS into BigQuery

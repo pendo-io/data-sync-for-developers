@@ -6,17 +6,17 @@ Pendo Data Sync copies your raw product usage data out of Pendo and delivers it 
 
 Data Sync exports three categories of data:
 
-- **Event data** - Raw and matched events (Pages, Features, Tracks), guide interactions, and poll responses. Configured at the application level.
-- **Account metadata** - Account-level attributes and their associated metadata. Configured at the subscription level.
-- **Visitor metadata** - Visitor-level attributes and their associated metadata. Configured at the subscription level.
+- **Event data** — Raw and matched events (Pages, Features, Tracks), guide interactions, and poll responses. Configured at the application level.
+- **Account metadata** — Account-level attributes and their associated metadata. Configured at the subscription level.
+- **Visitor metadata** — Visitor-level attributes and their associated metadata. Configured at the subscription level.
 
 All exports are written as **Avro files** plus an **export manifest** (`exportmanifest.json`) that your ETL pipeline uses to discover and load new data.
 
 ## Export Format
 
-- **Avro** - Compact, schema-aware format suitable for streaming and batch processing.
-- **Export manifest** - JSON file that lists recent exports and provides metadata for ETL automation.
-- **Bill of materials** - JSON file that lists all files within a given export.
+- **Avro** — Compact, schema-aware format suitable for streaming and batch processing.
+- **export manifest** — JSON file that lists recent exports and provides metadata for ETL automation.
+- **bill of materials** — JSON file that lists all files within a given export.
 
 ## Cloud Destinations
 
@@ -47,7 +47,7 @@ Your ETL pipeline will encounter these export types. All use the same directory 
 | **Historical** | Events | One-time backfill | Full event data for the date range (up to 3 years sequentially) |
 | **Recurring** | Events | Daily schedule | Yesterday's data (unfinalized) + finalized data from up to 9 days ago |
 | **Finalized** | Events | Part of recurring export | Re-export of a day's data after ~7–9 days; replaces an earlier `periodId` |
-| **Retroactive** | Events | Updates to Pages/Features | Matched event files for affected Pages/Features only (no `allevents.avro`) |
+| **Retroactive** | Events | Updates to Pages/Features | Matched event files for affected Pages/Features only (no `allEvents.avro`) |
 | **Account** | Accounts | Daily schedule | Account metadata and metadataschema |
 | **Visitor** | Visitors | Daily schedule | Visitor metadata and metadataschema |
 
@@ -55,7 +55,7 @@ Your ETL pipeline will encounter these export types. All use the same directory 
 
 ## Directory Structure
 
-In cloud storage, the root path you configure (eg. `gs://bucket/` or `s3://bucket/`) is prepended; Pendo creates a `datasync` folder under that root.
+In cloud storage, the root path you configure (e.g. `gs://bucket/` or `s3://bucket/`) is prepended; Pendo creates a `datasync` folder under that root.
 
 This repository includes a [`.data/`](../../.data/) folder that mirrors the export structure for reference.
 
@@ -65,11 +65,11 @@ This repository includes a [`.data/`](../../.data/) folder that mirrors the expo
 │   ├── exportmanifest.json            # Rolling 30-day window of exports; metadata about each export
 │   ├── {export-uuid}/
 │   │   ├── billofmaterials.json       # Documents export contents; paths to definition and event files
-│   .   ├── allevents.avro             # All event data, including unmatched events and guide events
-│   .   ├── allfeatures.avro           # Feature definitions
-│   .   ├── allguides.avro             # Guide definitions
-│   .   ├── allpages.avro              # Page definitions
-│   .   ├── alltracktypes.avro         # Track Event definitions
+│   .   ├── allEvents.avro             # All event data, including unmatched events and guide events
+│   .   ├── allFeatures.avro           # Feature definitions
+│   .   ├── allGuides.avro             # Guide definitions
+│   .   ├── allPages.avro              # Page definitions
+│   .   ├── allTrackTypes.avro         # Track Event definitions
 │   .   └── matchedEvents/
 │   .       ├── Feature/
 │   .       │   └── <feature_id>.avro  # Events matched to a specific Feature
@@ -86,14 +86,14 @@ This repository includes a [`.data/`](../../.data/) folder that mirrors the expo
 │   └── {export-id}/
 │       ├── billofmaterials.json
 │       ├── accounts.avro              # Account definitions
-│       └── metadataschema.avro        # Schema for metadata fields (names, types, groups)
+│       └── metadataSchema.avro        # Schema for metadata fields (names, types, groups)
 │
 └── visitor/
     ├── exportmanifest.json            # Rolling 30-day window of exports; metadata about each export
     └── {export-id}/
         ├── billofmaterials.json
         ├── visitors.avro              # Visitor definitions
-        └── metadataschema.avro        # Schema for metadata fields (names, types, groups)
+        └── metadataSchema.avro        # Schema for metadata fields (names, types, groups)
 ```
 
 ---

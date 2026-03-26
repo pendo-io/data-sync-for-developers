@@ -1,6 +1,6 @@
 # Data Load Strategy
 
-It's recommended to create a schema per application for event and definition data, with one schema for visitors and accounts each. This most closely matches the export avro files.
+Create one `schema` per application for event and definition data, plus one `schema` each for visitor and account data. This layout most closely matches the exported Avro files.
 
 ```
 DATABASE
@@ -30,28 +30,28 @@ DATABASE
 | Table | Source | Primary Key | Partition Key |
 |-------|--------|-------------|---------------|
 | `ACCOUNTS` | `account/{export}/accounts.avro` | `(id, )` | - |
-| `ACCOUNTMETADATA` | `account/{export}/metadataschema.avro` | `(name, )` | - |
+| `ACCOUNTMETADATA` | `account/{export}/metadataSchema.avro` | `(name, )` | - |
 | `VISITORS` | `visitor/{export}/visitors.avro` | `(id, )` | - |
-| `VISITORMETADATA` | `visitor/{export}/metadataschema.avro` | `(name, )` | - |
-| `ALLEVENTS` | ` {app} /{export}/allevents.avro` | `(periodId, eventId)` | `periodId` |
-| `MATCHEDPAGEEVENTS` | ` {app} /{export}/matchedEvents/Page/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
-| `MATCHEDFEATUREEVENTS` | ` {app} /{export}/matchedEvents/Feature/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
-| `MATCHEDTRACKTYPEEVENTS` | ` {app} /{export}/matchedEvents/TrackType/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
-| `PAGES` | ` {app} /{export}/allpages.avro` | `(pageId, )` | - |
-| `FEATURES` | ` {app} /{export}/allfeatures.avro` | `(featureId, )` | - |
-| `TRACKTYPES` | ` {app} /{export}/alltracktypes.avro` | `(trackTypeId, )` | - |
-| `GUIDES` | ` {app} /{export}/allguides.avro` | `(guideId, )` | - |
+| `VISITORMETADATA` | `visitor/{export}/metadataSchema.avro` | `(name, )` | - |
+| `ALLEVENTS` | `{app}/{export}/allEvents.avro` | `(periodId, eventId)` | `periodId` |
+| `MATCHEDPAGEEVENTS` | `{app}/{export}/matchedEvents/Page/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
+| `MATCHEDFEATUREEVENTS` | `{app}/{export}/matchedEvents/Feature/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
+| `MATCHEDTRACKTYPEEVENTS` | `{app}/{export}/matchedEvents/TrackType/*.avro` | `(periodId, eventId, matchableId)` | `periodId` |
+| `PAGES` | `{app}/{export}/allPages.avro` | `(pageId, )` | - |
+| `FEATURES` | `{app}/{export}/allFeatures.avro` | `(featureId, )` | - |
+| `TRACKTYPES` | `{app}/{export}/allTrackTypes.avro` | `(trackTypeId, )` | - |
+| `GUIDES` | `{app}/{export}/allGuides.avro` | `(guideId, )` | - |
 
 ## Load Logic
 
 ### Event tables
 
-Read the bill of materials and iterate over `timeDependent`. For each `periodId`..
+Read the **bill of materials** and iterate over `timeDependent`. For each `periodId`:
 
 **All Events**
 
-- If `allEvents` is present: delete existing rows for this `periodId`, then insert from `allEvents.files`.
-- If `allEvents` is absent (retroactive export): skip. Do not load ALLEVENTS for this period.
+- If `allEvents` is present: delete existing rows for this `periodId`, then insert from `allEvents.files` (`allEvents.avro`).
+- If `allEvents` is absent (retroactive export): skip. Do not load `ALLEVENTS` for this period.
 
 **Matched Page, Feature, and TrackType Events**
 
@@ -76,11 +76,11 @@ Full replace on each load. No `timeDependent` block.
 
 ## Pre-Filtering
 
-Filter during load to exclude unwanted rows. Document exclusions for downstream consumers. Some examples of why you may pre-filter data before loading to long-term storage..
+Filter during load to exclude unwanted rows. Document exclusions for downstream consumers. Some examples of why you may pre-filter data before loading to long-term storage:
 
-- **Anonymous visitors** - Pendo assigns temporary IDs to unidentified users, most of Pendo reporting revolves around identified users.
-- **Align with Pendo analytics** - Data Sync exports all events, including those classified by the [exclude list](https://support.pendo.io/hc/en-us/articles/360032209171).
-- **Cost and compliance** - Reduce storage and query cost, or exclude test accounts, internal users, or regions for privacy.
+- **Anonymous visitors** — Pendo assigns temporary IDs to unidentified users; most Pendo reporting revolves around identified users.
+- **Align with Pendo analytics** — Data Sync exports all events, including those classified by the [exclude list](https://support.pendo.io/hc/en-us/articles/360032209171).
+- **Cost and compliance** — Reduce storage and query cost, or exclude test accounts, internal users, or regions for privacy.
 
 **Example: exclude anonymous visitors** (`visitorId` like `_PENDO_T_%`):
 
