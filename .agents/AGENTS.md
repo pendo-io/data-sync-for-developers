@@ -115,6 +115,7 @@ place `---` before the navigation footer at the end of a file.
 
 * Concept files: `kebab-case.md` — no spaces, no uppercase
 * Section index files: `README.md`
+* Avro export files: `camelCase.avro` — no spaces, no uppercase, preserve canonical names such as `allEvents.avro`
 * New concept sections: add a numbered prefix folder matching the pattern (`03-next-topic/`)
 
 ## Navigation and cross-links
