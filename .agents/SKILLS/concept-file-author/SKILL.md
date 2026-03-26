@@ -40,11 +40,11 @@ Use this structure for every concept file (non-README):
 
 ---
 
-**Related:** [File A](FULL_GITHUB_URL) · [File B](FULL_GITHUB_URL)
+**Related:** [File A](./file-a.md) · [File B](./file-b.md)
 
 ---
 
-← [Section Name](FULL_GITHUB_URL_TO_PARENT_README)
+← [Section Name](./README.md)
 ```
 
 The `**Related:**` line is optional — include it when two or more other concept
@@ -71,7 +71,7 @@ Match the style of existing READMEs.]
 
 | Topic | Description |
 | --- | --- |
-| [File Title](FULL_GITHUB_URL) | One-sentence description of what the file covers. |
+| [File Title](./file-title.md) | One-sentence description of what the file covers. |
 
 ## Learn More
 
@@ -132,8 +132,8 @@ to surface those concerns in the main flow instead.
 * Always place `---` before the navigation footer
 
 **Internal links**
-* Always full GitHub URLs — never relative paths:
-  `https://github.com/pendo-io/data-sync-for-developers/blob/dataload/concepts/...`
+* Always use relative paths for internal repo links — never full GitHub URLs:
+  `./file-name.md`, `../sibling-section/README.md`
 
 ---
 

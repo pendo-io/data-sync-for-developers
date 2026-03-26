@@ -47,7 +47,7 @@ data warehouse concepts — do not over-explain them.
 
 ### Lists
 
-Use `*` for unordered lists, not `-`. For definition-style lists, bold the term
+Use `-` for unordered lists, not `*`. For definition-style lists, bold the term
 and separate it from the definition with an em dash:
 
 ```
@@ -62,11 +62,10 @@ mappings). Bold the key identifier in the first column. Keep header names short.
 
 ### Code blocks
 
-Use fenced code blocks for directory trees, SQL, and ASCII flow diagrams. Do not
-add a language specifier — use bare triple backticks:
+Use fenced code blocks for directory trees, SQL, and ASCII flow diagrams. Use triple backticks, along with a language specifier.
 
 ````
-```
+```sql
 SELECT periodId, COUNT(*) FROM ALLEVENTS GROUP BY 1;
 ```
 ````
@@ -120,16 +119,16 @@ place `---` before the navigation footer at the end of a file.
 
 ## Navigation and cross-links
 
-Use full GitHub URLs for all internal links — not relative paths:
+Use relative paths for all internal repo links — not full GitHub URLs:
 
 ```
-[Finalized Data](https://github.com/pendo-io/data-sync-for-developers/blob/dataload/concepts/01-dataload/finalized-data.md)
+[Finalized Data](./finalized-data.md)
 ```
 
 End every concept file (non-README) with a back-navigation line after a `---`:
 
 ```
-← [Data Load Overview](https://github.com/pendo-io/data-sync-for-developers/blob/dataload/concepts/01-dataload/README.md)
+← [Data Load Overview](./README.md)
 ```
 
 When multiple cross-links are useful, add a `**Related:**` line before the back-nav,
@@ -188,6 +187,6 @@ the relevant skill before starting a task:
 **Never:**
 * Add YAML frontmatter
 * Use HTML in Markdown files
-* Use relative paths for internal cross-references
+* Use full GitHub URLs for internal cross-references
 * Use `-` for unordered list items
 * Create files with uppercase letters or spaces in the name
